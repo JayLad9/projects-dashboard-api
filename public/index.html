@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Substrate Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0c0f; --card: #13131a; --card2: #15151d; --line: #1c1c24;
+    --text: #e8e8ee; --dim: #888894; --faint: #55555f;
+    --indigo: #6366f1; --green: #10b981; --orange: #f97316; --purple: #8b5cf6;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono','Fira Code',monospace; -webkit-font-smoothing: antialiased; padding: 14px 12px 40px; max-width: 640px; margin: 0 auto; }
+  h1 { font-family: 'Syne',sans-serif; font-weight: 800; letter-spacing: -0.03em; }
+  input { background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; width: 100%; }
+  input::placeholder { color: #4a4a55; }
+  .tap { cursor: pointer; } .tap:active { opacity: .6; }
+  .head { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+  .date { font-size:11px; color:var(--dim); margin-top:2px; }
+  .tabs { display:flex; gap:6px; margin-bottom:16px; }
+  .tab { flex:1; text-align:center; padding:9px; border-radius:9px; font-size:12px; font-weight:500; border:1px solid var(--line); background:var(--card); color:var(--dim); cursor:pointer; }
+  .tab.active { background:#1a1a28; color:#a5a5f0; border-color:#33335a; }
+  .counters { display:grid; gap:8px; margin-bottom:14px; }
+  .counter { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  .counter .n { font-size:22px; font-weight:500; line-height:1; }
+  .counter .l { font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; font-weight:500; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:9px; }
+  .ptitle { font-size:13px; font-weight:500; }
+  .badge { font-size:9px; padding:2px 7px; border-radius:4px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; }
+  .pnext { font-size:11px; color:#9a9aa4; margin-top:6px; line-height:1.45; }
+  .pmeta { font-size:10px; color:var(--faint); margin-top:6px; }
+  .btn { width:100%; border-radius:9px; padding:11px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; border:1px solid #2a2a38; background:#15151d; color:#a5a5f0; display:flex; align-items:center; justify-content:center; gap:7px; }
+  .btn:active { opacity:.7; }
+  .btn[disabled] { color:var(--dim); cursor:default; }
+  .sec-head { display:flex; align-items:center; gap:7px; margin:14px 0 7px; }
+  .sec-label { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
+  .sec-hint { font-size:10px; color:var(--faint); }
+  .item { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-bottom:5px; display:flex; align-items:flex-start; gap:9px; }
+  .chk { width:16px; height:16px; border-radius:4px; margin-top:1px; flex-shrink:0; border:1.5px solid #3a3a45; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--bg); font-weight:700; }
+  .task-in { font-size:13px; font-weight:500; }
+  .next-in { font-size:11px; color:var(--dim); margin-top:3px; }
+  .next-in::placeholder { color:#3a3a45; }
+  .time-in { background:#1a1a22; border:1px solid #2a2a35; border-radius:6px; color:#b0b0bc; font-size:11px; width:52px; text-align:center; padding:3px 0; flex-shrink:0; }
+  .done .task-in, .done .next-in { color:#555560; text-decoration:line-through; }
+  .tray { margin-top:9px; background:#101017; border:1px dashed #2a2a38; border-radius:10px; padding:9px; }
+  .tray-q { background:var(--card2); border-radius:8px; padding:8px 9px; margin-bottom:6px; }
+  .assign-row { display:flex; gap:6px; margin-top:7px; }
+  .assign { flex:1; text-align:center; border-radius:6px; padding:5px 0; font-size:13px; cursor:pointer; }
+  .assign:active { transform:scale(.92); }
+  .err { background:#1f1416; border:1px solid #4a1f24; border-radius:8px; padding:9px 11px; font-size:11px; color:#f0a0a8; margin-top:8px; }
+  .empty { text-align:center; padding:40px 10px; color:var(--faint); font-size:13px; }
+  .foot { text-align:center; font-size:9px; color:#33333c; letter-spacing:.08em; margin-top:22px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <h1 style="font-size:22px">Substrate Hub</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <div style="text-align:right">
+      <div id="score" style="font-size:18px;font-weight:500">0/0</div>
+      <div class="tap" id="reset" style="font-size:10px;color:var(--dim);margin-top:2px">reset day</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-view="hub">Daily Hub</div>
+    <div class="tab" data-view="projects">Projects</div>
+  </div>
+
+  <div id="view-hub">
+    <button class="btn" id="pull">↓ Pull open side quests from Notion</button>
+    <div id="pull-err"></div>
+    <div id="tray"></div>
+    <div id="sections"></div>
+  </div>
+
+  <div id="view-projects" class="hidden">
+    <button class="btn" id="refresh" style="margin-bottom:14px">⟳ Refresh projects</button>
+    <div class="counters" id="counters"></div>
+    <div id="projects"></div>
+  </div>
+
+  <div class="foot">SUBSTRATE CYPHER · LIVE FROM NOTION</div>
+
+<script>
+const API = '';
+const SECTIONS = [
+  { key:'focus',    label:'Focus',    icon:'🎯', color:'#6366f1', hint:'Top 3 priorities' },
+  { key:'quick',    label:'Quick',    icon:'⚡', color:'#10b981', hint:'~15 min wins' },
+  { key:'large',    label:'Large',    icon:'🛠', color:'#f97316', hint:'Deeper work' },
+  { key:'research', label:'Research', icon:'🔬', color:'#8b5cf6', hint:'Dig / learn' },
+];
+const STATUS_COLORS = { 'Active':'#10b981','In Progress':'#3b82f6','Planning':'#f59e0b','Concept':'#8b5cf6','Research':'#6366f1','Strategy done':'#d1d5db','On Hold':'#9ca3af','Complete':'#6b7280' };
+const PRI_COLORS = { 'HIGH':'#ef4444','MEDIUM':'#f97316','LOW':'#3b82f6','ONGOING':'#6b7280','TODAY':'#ef4444','THIS_WEEK':'#f97316','MULTIPLE_WEEKS':'#3b82f6','WHENEVER':'#6b7280' };
+const PRI_RANK = { TODAY:0, THIS_WEEK:1, MULTIPLE_WEEKS:2, WHENEVER:3 };
+
+const todayKey = () => { const d=new Date(); return `daily-hub:${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const emptyItem = () => ({ task:'', next:'', time:'', done:false, questId:null });
+const emptyData = () => ({ focus:[emptyItem(),emptyItem(),emptyItem()], quick:[emptyItem(),emptyItem(),emptyItem()], large:[emptyItem(),emptyItem(),emptyItem()], research:[emptyItem(),emptyItem(),emptyItem()] });
+
+let hub = emptyData();
+let tray = [];
+let projects = [];
+
+function loadHub() {
+  try { const raw = localStorage.getItem(todayKey()); if (raw) hub = Object.assign(emptyData(), JSON.parse(raw)); }
+  catch(e){}
+}
+function saveHub() { try { localStorage.setItem(todayKey(), JSON.stringify(hub)); } catch(e){} updateScore(); }
+
+function updateScore() {
+  let done=0, total=0;
+  SECTIONS.forEach(s => hub[s.key].forEach(i => { if (i.task){ total++; if(i.done) done++; } }));
+  const el = document.getElementById('score');
+  el.textContent = `${done}/${total}`;
+  el.style.color = (total>0 && done===total) ? 'var(--green)' : 'var(--text)';
+}
+
+function renderHub() {
+  const wrap = document.getElementById('sections');
+  wrap.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const done = hub[s.key].filter(i=>i.done&&i.task).length;
+    const cnt = hub[s.key].filter(i=>i.task).length;
+    const head = document.createElement('div');
+    head.className = 'sec-head';
+    head.innerHTML = `<span style="font-size:13px">${s.icon}</span>
+      <span class="sec-label" style="color:${s.color}">${s.label}</span>
+      <span class="sec-hint">${s.hint}</span>
+      ${cnt>0?`<span style="margin-left:auto;font-size:10px;color:${done===cnt?'var(--green)':'var(--faint)'}">${done}/${cnt}</span>`:''}`;
+    wrap.appendChild(head);
+    hub[s.key].forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'item' + (item.done?' done':'');
+      row.style.borderLeft = `3px solid ${item.task?s.color:'var(--line)'}`;
+      if (item.task) row.style.borderColor = s.color+'33';
+      row.innerHTML = `
+        <div class="chk" data-act="toggle" data-sec="${s.key}" data-idx="${idx}" style="border-color:${item.done?s.color:'#3a3a45'};background:${item.done?s.color:'transparent'};cursor:${item.task?'pointer':'default'}">${item.done?'✓':''}</div>
+        <div style="flex:1;min-width:0">
+          <input class="task-in" data-field="task" data-sec="${s.key}" data-idx="${idx}" placeholder="${s.label} task ${idx+1}…" value="${esc(item.task)}">
+          ${item.task!==''?`<input class="next-in" data-field="next" data-sec="${s.key}" data-idx="${idx}" placeholder="→ next step…" value="${esc(item.next)}">`:''}
+        </div>
+        ${item.task!==''?`<input class="time-in" data-field="time" data-sec="${s.key}" data-idx="${idx}" placeholder="time" value="${esc(item.time)}">`:''}`;
+      wrap.appendChild(row);
+    });
+  });
+  updateScore();
+}
+
+function esc(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+async function pullQuests() {
+  const btn = document.getElementById('pull');
+  const errEl = document.getElementById('pull-err');
+  btn.disabled = true; btn.textContent = '⟳ Pulling side quests…'; errEl.innerHTML='';
+  try {
+    const res = await fetch(API + '/api/quests');
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message || ('Server '+res.status)); }
+    const json = await res.json();
+    const assigned = new Set();
+    SECTIONS.forEach(s => hub[s.key].forEach(i => i.questId && assigned.add(i.questId)));
+    tray = (json.quests||[]).filter(q=>!assigned.has(q.id)).sort((a,b)=>(PRI_RANK[a.priority]??9)-(PRI_RANK[b.priority]??9));
+    renderTray();
+  } catch(err) {
+    errEl.innerHTML = `<div class="err">⚠ ${esc(err.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '↓ Pull open side quests from Notion';
+  }
+}
+
+function renderTray() {
+  const el = document.getElementById('tray');
+  if (!tray.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="tray"><div style="font-size:10px;color:var(--dim);margin-bottom:8px">${tray.length} quest${tray.length!==1?'s':''} · tap an icon to assign</div>${tray.map(q=>`
+    <div class="tray-q">
+      <div style="display:flex;align-items:flex-start;gap:7px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:#dcdce4;font-weight:500;line-height:1.3">${esc(q.quest)}</div>
+          ${q.nextStep?`<div style="font-size:10px;color:#777783;margin-top:2px">→ ${esc(q.nextStep)}</div>`:''}
+        </div>
+        ${q.priority?`<span class="badge" style="font-size:8px;color:${PRI_COLORS[q.priority]||'#6b7280'};border:1px solid ${(PRI_COLORS[q.priority]||'#6b7280')}55">${q.priority}</span>`:''}
+      </div>
+      <div class="assign-row">
+        ${SECTIONS.map(s=>`<div class="assign" data-act="assign" data-qid="${q.id}" data-sec="${s.key}" style="background:${s.color}1a;border:1px solid ${s.color}44">${s.icon}</div>`).join('')}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function assignQuest(qid, secKey) {
+  const q = tray.find(x=>x.id===qid); if(!q) return;
+  const slots = hub[secKey];
+  const i = slots.findIndex(s=>!s.task);
+  if (i===-1) { alert(SECTIONS.find(s=>s.key===secKey).label + ' is full (3/3).'); return; }
+  slots[i] = { task:q.quest, next:q.nextStep||'', time:'', done:false, questId:q.id };
+  tray = tray.filter(x=>x.id!==qid);
+  saveHub(); renderHub(); renderTray();
+}
+
+async function fetchProjects() {
+  const btn = document.getElementById('refresh');
+  btn.disabled = true; btn.textContent = '⟳ Loading…';
+  const list = document.getElementById('projects');
+  try {
+    const res = await fetch(API + '/api/projects');
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message || ('Server '+res.status)); }
+    const json = await res.json();
+    projects = json.projects || [];
+    renderProjects();
+  } catch(err) {
+    list.innerHTML = `<div class="err">⚠ ${esc(err.message)}</div>`;
+    document.getElementById('counters').innerHTML='';
+  } finally {
+    btn.disabled = false; btn.textContent = '⟳ Refresh projects';
+  }
+}
+
+function renderProjects() {
+  const order = ['Active','In Progress','Planning','Concept','Research'];
+  const counters = document.getElementById('counters');
+  const active = order.filter(s=>projects.filter(p=>p.Status===s).length>0);
+  counters.style.gridTemplateColumns = `repeat(${Math.min(active.length,4)||1},1fr)`;
+  counters.innerHTML = active.map(s=>`<div class="counter"><div class="l" style="color:${STATUS_COLORS[s]||'#888'}">${s}</div><div class="n">${projects.filter(p=>p.Status===s).length}</div></div>`).join('');
+  const list = document.getElementById('projects');
+  if (!projects.length) { list.innerHTML = '<div class="empty">No projects found</div>'; return; }
+  list.innerHTML = projects.map(p=>`
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="ptitle">${esc(p.Project)}</span>
+        ${p.Status?`<span class="badge" style="background:${(STATUS_COLORS[p.Status]||'#6b7280')}1f;color:${STATUS_COLORS[p.Status]||'#6b7280'}">${p.Status}</span>`:''}
+        ${p.Priority?`<span class="badge" style="margin-left:auto;background:${PRI_COLORS[p.Priority]||'#6b7280'};color:#fff">${p.Priority}</span>`:''}
+      </div>
+      ${p['Next Action']?`<div class="pnext">→ ${esc(p['Next Action'].split('|')[0].trim())}</div>`:''}
+      <div class="pmeta">${[p['Due Date']?new Date(p['Due Date']).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'', p['Days Left']!=null?p['Days Left']+'d left':''].filter(Boolean).join(' · ')}</div>
+    </div>`).join('');
+}
+
+document.getElementById('date').textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const v = t.dataset.view;
+  document.getElementById('view-hub').classList.toggle('hidden', v!=='hub');
+  document.getElementById('view-projects').classList.toggle('hidden', v!=='projects');
+  if (v==='projects' && !projects.length) fetchProjects();
+});
+
+document.getElementById('pull').onclick = pullQuests;
+document.getElementById('refresh').onclick = fetchProjects;
+document.getElementById('reset').onclick = () => { if(confirm("Clear all of today's tasks?")){ hub=emptyData(); tray=[]; saveHub(); renderHub(); renderTray(); } };
+
+document.getElementById('sections').addEventListener('input', e=>{
+  const f=e.target.dataset.field; if(!f) return;
+  hub[e.target.dataset.sec][+e.target.dataset.idx][f] = e.target.value;
+  saveHub();
+});
+document.getElementById('sections').addEventListener('click', e=>{
+  const c=e.target.closest('[data-act="toggle"]'); if(!c) return;
+  const it = hub[c.dataset.sec][+c.dataset.idx]; if(!it.task) return;
+  it.done = !it.done; saveHub(); renderHub();
+});
+document.getElementById('tray').addEventListener('click', e=>{
+  const a=e.target.closest('[data-act="assign"]'); if(!a) return;
+  assignQuest(a.dataset.qid, a.dataset.sec);
+});
+
+loadHub(); renderHub();
+</script>
+</body>
+</html>
