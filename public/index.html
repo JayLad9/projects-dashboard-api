@@ -20,23 +20,33 @@
   input { background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; width: 100%; }
   input::placeholder { color: #4a4a55; }
   .tap { cursor: pointer; } .tap:active { opacity: .6; }
+
+  /* Header + tabs */
   .head { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
   .date { font-size:11px; color:var(--dim); margin-top:2px; }
   .tabs { display:flex; gap:6px; margin-bottom:16px; }
   .tab { flex:1; text-align:center; padding:9px; border-radius:9px; font-size:12px; font-weight:500; border:1px solid var(--line); background:var(--card); color:var(--dim); cursor:pointer; }
   .tab.active { background:#1a1a28; color:#a5a5f0; border-color:#33335a; }
+
+  /* Status counters */
   .counters { display:grid; gap:8px; margin-bottom:14px; }
   .counter { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
   .counter .n { font-size:22px; font-weight:500; line-height:1; }
   .counter .l { font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; font-weight:500; }
+
+  /* Project / task cards */
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:9px; }
   .ptitle { font-size:13px; font-weight:500; }
   .badge { font-size:9px; padding:2px 7px; border-radius:4px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; }
   .pnext { font-size:11px; color:#9a9aa4; margin-top:6px; line-height:1.45; }
   .pmeta { font-size:10px; color:var(--faint); margin-top:6px; }
+
+  /* Buttons */
   .btn { width:100%; border-radius:9px; padding:11px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; border:1px solid #2a2a38; background:#15151d; color:#a5a5f0; display:flex; align-items:center; justify-content:center; gap:7px; }
   .btn:active { opacity:.7; }
   .btn[disabled] { color:var(--dim); cursor:default; }
+
+  /* Hub sections */
   .sec-head { display:flex; align-items:center; gap:7px; margin:14px 0 7px; }
   .sec-label { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
   .sec-hint { font-size:10px; color:var(--faint); }
@@ -47,11 +57,17 @@
   .next-in::placeholder { color:#3a3a45; }
   .time-in { background:#1a1a22; border:1px solid #2a2a35; border-radius:6px; color:#b0b0bc; font-size:11px; width:52px; text-align:center; padding:3px 0; flex-shrink:0; }
   .done .task-in, .done .next-in { color:#555560; text-decoration:line-through; }
+
+  /* Tray */
   .tray { margin-top:9px; background:#101017; border:1px dashed #2a2a38; border-radius:10px; padding:9px; }
   .tray-q { background:var(--card2); border-radius:8px; padding:8px 9px; margin-bottom:6px; }
   .assign-row { display:flex; gap:6px; margin-top:7px; }
-  .assign { flex:1; text-align:center; border-radius:6px; padding:5px 0; font-size:13px; cursor:pointer; }
+  .assign { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:6px; padding:6px 0; cursor:pointer; }
   .assign:active { transform:scale(.92); }
+  .assign .ai { font-size:14px; line-height:1; }
+  .assign .al { font-size:8px; letter-spacing:.02em; text-transform:uppercase; font-weight:500; }
+  .tray-toggle { font-size:10px; color:#a5a5f0; cursor:pointer; }
+
   .err { background:#1f1416; border:1px solid #4a1f24; border-radius:8px; padding:9px 11px; font-size:11px; color:#f0a0a8; margin-top:8px; }
   .empty { text-align:center; padding:40px 10px; color:var(--faint); font-size:13px; }
   .foot { text-align:center; font-size:9px; color:#33333c; letter-spacing:.08em; margin-top:22px; }
@@ -75,6 +91,7 @@
     <div class="tab" data-view="projects">Projects</div>
   </div>
 
+  <!-- HUB VIEW -->
   <div id="view-hub">
     <button class="btn" id="pull">↓ Pull open side quests from Notion</button>
     <div id="pull-err"></div>
@@ -82,6 +99,7 @@
     <div id="sections"></div>
   </div>
 
+  <!-- PROJECTS VIEW -->
   <div id="view-projects" class="hidden">
     <button class="btn" id="refresh" style="margin-bottom:14px">⟳ Refresh projects</button>
     <div class="counters" id="counters"></div>
@@ -91,7 +109,7 @@
   <div class="foot">SUBSTRATE CYPHER · LIVE FROM NOTION</div>
 
 <script>
-const API = '';
+const API = ''; // same origin
 const SECTIONS = [
   { key:'focus',    label:'Focus',    icon:'🎯', color:'#6366f1', hint:'Top 3 priorities' },
   { key:'quick',    label:'Quick',    icon:'⚡', color:'#10b981', hint:'~15 min wins' },
@@ -108,8 +126,10 @@ const emptyData = () => ({ focus:[emptyItem(),emptyItem(),emptyItem()], quick:[e
 
 let hub = emptyData();
 let tray = [];
+let trayShowAll = false;
 let projects = [];
 
+// ---------- Load / save ----------
 function loadHub() {
   try { const raw = localStorage.getItem(todayKey()); if (raw) hub = Object.assign(emptyData(), JSON.parse(raw)); }
   catch(e){}
@@ -124,6 +144,7 @@ function updateScore() {
   el.style.color = (total>0 && done===total) ? 'var(--green)' : 'var(--text)';
 }
 
+// ---------- Render Hub ----------
 function renderHub() {
   const wrap = document.getElementById('sections');
   wrap.innerHTML = '';
@@ -137,6 +158,7 @@ function renderHub() {
       <span class="sec-hint">${s.hint}</span>
       ${cnt>0?`<span style="margin-left:auto;font-size:10px;color:${done===cnt?'var(--green)':'var(--faint)'}">${done}/${cnt}</span>`:''}`;
     wrap.appendChild(head);
+
     hub[s.key].forEach((item, idx) => {
       const row = document.createElement('div');
       row.className = 'item' + (item.done?' done':'');
@@ -157,6 +179,7 @@ function renderHub() {
 
 function esc(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
+// ---------- Pull quests ----------
 async function pullQuests() {
   const btn = document.getElementById('pull');
   const errEl = document.getElementById('pull-err');
@@ -179,7 +202,14 @@ async function pullQuests() {
 function renderTray() {
   const el = document.getElementById('tray');
   if (!tray.length) { el.innerHTML=''; return; }
-  el.innerHTML = `<div class="tray"><div style="font-size:10px;color:var(--dim);margin-bottom:8px">${tray.length} quest${tray.length!==1?'s':''} · tap an icon to assign</div>${tray.map(q=>`
+  const visible = trayShowAll ? tray : tray.filter(q => q.priority==='TODAY' || q.priority==='THIS_WEEK');
+  const hidden = tray.length - visible.length;
+  el.innerHTML = `<div class="tray">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:10px;color:var(--dim)">${visible.length} shown · tap a label to assign</span>
+      ${(hidden>0 || trayShowAll) ? `<span class="tray-toggle" id="tray-toggle">${trayShowAll ? 'show less' : 'show all '+tray.length}</span>` : ''}
+    </div>
+    ${visible.map(q=>`
     <div class="tray-q">
       <div style="display:flex;align-items:flex-start;gap:7px">
         <div style="flex:1;min-width:0">
@@ -189,9 +219,11 @@ function renderTray() {
         ${q.priority?`<span class="badge" style="font-size:8px;color:${PRI_COLORS[q.priority]||'#6b7280'};border:1px solid ${(PRI_COLORS[q.priority]||'#6b7280')}55">${q.priority}</span>`:''}
       </div>
       <div class="assign-row">
-        ${SECTIONS.map(s=>`<div class="assign" data-act="assign" data-qid="${q.id}" data-sec="${s.key}" style="background:${s.color}1a;border:1px solid ${s.color}44">${s.icon}</div>`).join('')}
+        ${SECTIONS.map(s=>`<div class="assign" data-act="assign" data-qid="${q.id}" data-sec="${s.key}" title="Add to ${s.label}" style="background:${s.color}1a;border:1px solid ${s.color}44;color:${s.color}"><span class="ai">${s.icon}</span><span class="al">${s.label}</span></div>`).join('')}
       </div>
     </div>`).join('')}</div>`;
+  const tog = document.getElementById('tray-toggle');
+  if (tog) tog.onclick = () => { trayShowAll = !trayShowAll; renderTray(); };
 }
 
 function assignQuest(qid, secKey) {
@@ -204,6 +236,7 @@ function assignQuest(qid, secKey) {
   saveHub(); renderHub(); renderTray();
 }
 
+// ---------- Projects ----------
 async function fetchProjects() {
   const btn = document.getElementById('refresh');
   btn.disabled = true; btn.textContent = '⟳ Loading…';
@@ -228,6 +261,7 @@ function renderProjects() {
   const active = order.filter(s=>projects.filter(p=>p.Status===s).length>0);
   counters.style.gridTemplateColumns = `repeat(${Math.min(active.length,4)||1},1fr)`;
   counters.innerHTML = active.map(s=>`<div class="counter"><div class="l" style="color:${STATUS_COLORS[s]||'#888'}">${s}</div><div class="n">${projects.filter(p=>p.Status===s).length}</div></div>`).join('');
+
   const list = document.getElementById('projects');
   if (!projects.length) { list.innerHTML = '<div class="empty">No projects found</div>'; return; }
   list.innerHTML = projects.map(p=>`
@@ -242,6 +276,7 @@ function renderProjects() {
     </div>`).join('');
 }
 
+// ---------- Events ----------
 document.getElementById('date').textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
 
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
@@ -257,6 +292,7 @@ document.getElementById('pull').onclick = pullQuests;
 document.getElementById('refresh').onclick = fetchProjects;
 document.getElementById('reset').onclick = () => { if(confirm("Clear all of today's tasks?")){ hub=emptyData(); tray=[]; saveHub(); renderHub(); renderTray(); } };
 
+// Delegated input + click for hub
 document.getElementById('sections').addEventListener('input', e=>{
   const f=e.target.dataset.field; if(!f) return;
   hub[e.target.dataset.sec][+e.target.dataset.idx][f] = e.target.value;
@@ -272,6 +308,7 @@ document.getElementById('tray').addEventListener('click', e=>{
   assignQuest(a.dataset.qid, a.dataset.sec);
 });
 
+// Init
 loadHub(); renderHub();
 </script>
 </body>
