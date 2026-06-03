@@ -60,6 +60,7 @@
 
   /* Tray */
   .tray { margin-top:9px; background:#101017; border:1px dashed #2a2a38; border-radius:10px; padding:9px; }
+  .tray-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--dim); }
   .tray-q { background:var(--card2); border-radius:8px; padding:8px 9px; margin-bottom:6px; }
   .assign-row { display:flex; gap:6px; margin-top:7px; }
   .assign { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:6px; padding:6px 0; cursor:pointer; }
@@ -202,11 +203,11 @@ async function pullQuests() {
 function renderTray() {
   const el = document.getElementById('tray');
   if (!tray.length) { el.innerHTML=''; return; }
-  const visible = trayShowAll ? tray : tray.filter(q => q.priority==='TODAY' || q.priority==='THIS_WEEK');
+  const visible = trayShowAll ? tray : tray.filter(q => q.priority==='TODAY');
   const hidden = tray.length - visible.length;
   el.innerHTML = `<div class="tray">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <span style="font-size:10px;color:var(--dim)">${visible.length} shown · tap a label to assign</span>
+    <div class="tray-header">
+      <span>32 shown · tap a label to assign</span>
       ${(hidden>0 || trayShowAll) ? `<span class="tray-toggle" id="tray-toggle">${trayShowAll ? 'show less' : 'show all '+tray.length}</span>` : ''}
     </div>
     ${visible.map(q=>`
