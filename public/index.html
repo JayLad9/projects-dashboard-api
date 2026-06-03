@@ -20,55 +20,33 @@
   input { background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; width: 100%; }
   input::placeholder { color: #4a4a55; }
   .tap { cursor: pointer; } .tap:active { opacity: .6; }
-
-  /* Header + tabs */
   .head { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
   .date { font-size:11px; color:var(--dim); margin-top:2px; }
   .tabs { display:flex; gap:6px; margin-bottom:16px; }
   .tab { flex:1; text-align:center; padding:9px; border-radius:9px; font-size:12px; font-weight:500; border:1px solid var(--line); background:var(--card); color:var(--dim); cursor:pointer; }
   .tab.active { background:#1a1a28; color:#a5a5f0; border-color:#33335a; }
-
-  /* Status counters */
   .counters { display:grid; gap:8px; margin-bottom:14px; }
   .counter { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
   .counter .n { font-size:22px; font-weight:500; line-height:1; }
   .counter .l { font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; font-weight:500; }
-
-  /* Project / task cards */
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:9px; }
   .ptitle { font-size:13px; font-weight:500; }
   .badge { font-size:9px; padding:2px 7px; border-radius:4px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; }
   .pnext { font-size:11px; color:#9a9aa4; margin-top:6px; line-height:1.45; }
   .pmeta { font-size:10px; color:var(--faint); margin-top:6px; }
-
-  /* Buttons */
   .btn { width:100%; border-radius:9px; padding:11px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; border:1px solid #2a2a38; background:#15151d; color:#a5a5f0; display:flex; align-items:center; justify-content:center; gap:7px; }
   .btn:active { opacity:.7; }
   .btn[disabled] { color:var(--dim); cursor:default; }
-
-  /* Hub sections */
   .sec-head { display:flex; align-items:center; gap:7px; margin:14px 0 7px; }
   .sec-label { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
   .sec-hint { font-size:10px; color:var(--faint); }
   .item { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-bottom:5px; display:flex; align-items:flex-start; gap:9px; }
-  .chk { width:16px; height:16px; border-radius:4px; margin-top:1px; flex-shrink:0; border:1.5px solid #3a3a45; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--bg); font-weight:700; }
+  .chk { width:16px; height:16px; border-radius:4px; margin-top:1px; flex-shrink:0; border:1.5px solid #3a3a45; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--bg); font-weight:700; cursor:pointer; }
   .task-in { font-size:13px; font-weight:500; }
   .next-in { font-size:11px; color:var(--dim); margin-top:3px; }
   .next-in::placeholder { color:#3a3a45; }
   .time-in { background:#1a1a22; border:1px solid #2a2a35; border-radius:6px; color:#b0b0bc; font-size:11px; width:52px; text-align:center; padding:3px 0; flex-shrink:0; }
   .done .task-in, .done .next-in { color:#555560; text-decoration:line-through; }
-
-  /* Tray */
-  .tray { margin-top:9px; background:#101017; border:1px dashed #2a2a38; border-radius:10px; padding:9px; }
-  .tray-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--dim); }
-  .tray-q { background:var(--card2); border-radius:8px; padding:8px 9px; margin-bottom:6px; }
-  .assign-row { display:flex; gap:6px; margin-top:7px; }
-  .assign { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:6px; padding:6px 0; cursor:pointer; }
-  .assign:active { transform:scale(.92); }
-  .assign .ai { font-size:14px; line-height:1; }
-  .assign .al { font-size:8px; letter-spacing:.02em; text-transform:uppercase; font-weight:500; }
-  .tray-toggle { font-size:10px; color:#a5a5f0; cursor:pointer; }
-
   .err { background:#1f1416; border:1px solid #4a1f24; border-radius:8px; padding:9px 11px; font-size:11px; color:#f0a0a8; margin-top:8px; }
   .empty { text-align:center; padding:40px 10px; color:var(--faint); font-size:13px; }
   .foot { text-align:center; font-size:9px; color:#33333c; letter-spacing:.08em; margin-top:22px; }
@@ -92,15 +70,12 @@
     <div class="tab" data-view="projects">Projects</div>
   </div>
 
-  <!-- HUB VIEW -->
   <div id="view-hub">
-    <button class="btn" id="pull">↓ Pull open side quests from Notion</button>
+    <button class="btn" id="pull" style="margin-bottom:14px">↓ Pull & auto-sort open quests</button>
     <div id="pull-err"></div>
-    <div id="tray"></div>
     <div id="sections"></div>
   </div>
 
-  <!-- PROJECTS VIEW -->
   <div id="view-projects" class="hidden">
     <button class="btn" id="refresh" style="margin-bottom:14px">⟳ Refresh projects</button>
     <div class="counters" id="counters"></div>
@@ -110,7 +85,7 @@
   <div class="foot">SUBSTRATE CYPHER · LIVE FROM NOTION</div>
 
 <script>
-const API = ''; // same origin
+const API = '';
 const SECTIONS = [
   { key:'focus',    label:'Focus',    icon:'🎯', color:'#6366f1', hint:'Top 3 priorities' },
   { key:'quick',    label:'Quick',    icon:'⚡', color:'#10b981', hint:'~15 min wins' },
@@ -119,18 +94,15 @@ const SECTIONS = [
 ];
 const STATUS_COLORS = { 'Active':'#10b981','In Progress':'#3b82f6','Planning':'#f59e0b','Concept':'#8b5cf6','Research':'#6366f1','Strategy done':'#d1d5db','On Hold':'#9ca3af','Complete':'#6b7280' };
 const PRI_COLORS = { 'HIGH':'#ef4444','MEDIUM':'#f97316','LOW':'#3b82f6','ONGOING':'#6b7280','TODAY':'#ef4444','THIS_WEEK':'#f97316','MULTIPLE_WEEKS':'#3b82f6','WHENEVER':'#6b7280' };
-const PRI_RANK = { TODAY:0, THIS_WEEK:1, MULTIPLE_WEEKS:2, WHENEVER:3 };
 
 const todayKey = () => { const d=new Date(); return `daily-hub:${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const emptyItem = () => ({ task:'', next:'', time:'', done:false, questId:null });
 const emptyData = () => ({ focus:[emptyItem(),emptyItem(),emptyItem()], quick:[emptyItem(),emptyItem(),emptyItem()], large:[emptyItem(),emptyItem(),emptyItem()], research:[emptyItem(),emptyItem(),emptyItem()] });
 
 let hub = emptyData();
-let tray = [];
-let trayShowAll = false;
+let quests = [];
 let projects = [];
 
-// ---------- Load / save ----------
 function loadHub() {
   try { const raw = localStorage.getItem(todayKey()); if (raw) hub = Object.assign(emptyData(), JSON.parse(raw)); }
   catch(e){}
@@ -145,7 +117,6 @@ function updateScore() {
   el.style.color = (total>0 && done===total) ? 'var(--green)' : 'var(--text)';
 }
 
-// ---------- Render Hub ----------
 function renderHub() {
   const wrap = document.getElementById('sections');
   wrap.innerHTML = '';
@@ -166,7 +137,7 @@ function renderHub() {
       row.style.borderLeft = `3px solid ${item.task?s.color:'var(--line)'}`;
       if (item.task) row.style.borderColor = s.color+'33';
       row.innerHTML = `
-        <div class="chk" data-act="toggle" data-sec="${s.key}" data-idx="${idx}" style="border-color:${item.done?s.color:'#3a3a45'};background:${item.done?s.color:'transparent'};cursor:${item.task?'pointer':'default'}">${item.done?'✓':''}</div>
+        <div class="chk" data-act="toggle" data-sec="${s.key}" data-idx="${idx}" style="border-color:${item.done?s.color:'#3a3a45'};background:${item.done?s.color:'transparent'}">${item.done?'✓':''}</div>
         <div style="flex:1;min-width:0">
           <input class="task-in" data-field="task" data-sec="${s.key}" data-idx="${idx}" placeholder="${s.label} task ${idx+1}…" value="${esc(item.task)}">
           ${item.task!==''?`<input class="next-in" data-field="next" data-sec="${s.key}" data-idx="${idx}" placeholder="→ next step…" value="${esc(item.next)}">`:''}
@@ -180,64 +151,42 @@ function renderHub() {
 
 function esc(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
-// ---------- Pull quests ----------
 async function pullQuests() {
   const btn = document.getElementById('pull');
   const errEl = document.getElementById('pull-err');
-  btn.disabled = true; btn.textContent = '⟳ Pulling side quests…'; errEl.innerHTML='';
+  btn.disabled = true; btn.textContent = '⟳ Pulling & sorting…'; errEl.innerHTML='';
   try {
     const res = await fetch(API + '/api/quests');
     if (!res.ok) { const e = await res.json(); throw new Error(e.message || ('Server '+res.status)); }
     const json = await res.json();
-    const assigned = new Set();
-    SECTIONS.forEach(s => hub[s.key].forEach(i => i.questId && assigned.add(i.questId)));
-    tray = (json.quests||[]).filter(q=>!assigned.has(q.id)).sort((a,b)=>(PRI_RANK[a.priority]??9)-(PRI_RANK[b.priority]??9));
-    renderTray();
+    quests = json.quests || [];
+    
+    // Auto-populate sections based on Hub Category
+    SECTIONS.forEach(s => {
+      const matching = quests.filter(q => q.hubCategory === s.label);
+      matching.slice(0, 3).forEach((quest, idx) => {
+        if (hub[s.key][idx].task === '') {
+          hub[s.key][idx] = { task: quest.quest, next: quest.nextStep || '', time: '', done: false, questId: quest.id };
+        }
+      });
+    });
+    saveHub(); renderHub();
+    btn.textContent = '✓ Sorted into sections';
+    setTimeout(() => { btn.textContent = '↓ Pull & auto-sort open quests'; btn.disabled = false; }, 2000);
   } catch(err) {
     errEl.innerHTML = `<div class="err">⚠ ${esc(err.message)}</div>`;
-  } finally {
-    btn.disabled = false; btn.textContent = '↓ Pull open side quests from Notion';
+    btn.disabled = false; btn.textContent = '↓ Pull & auto-sort open quests';
   }
 }
 
-function renderTray() {
-  const el = document.getElementById('tray');
-  if (!tray.length) { el.innerHTML=''; return; }
-  const visible = trayShowAll ? tray : tray.filter(q => q.priority==='TODAY');
-  const hidden = tray.length - visible.length;
-  el.innerHTML = `<div class="tray">
-    <div class="tray-header">
-      <span>32 shown · tap a label to assign</span>
-      ${(hidden>0 || trayShowAll) ? `<span class="tray-toggle" id="tray-toggle">${trayShowAll ? 'show less' : 'show all '+tray.length}</span>` : ''}
-    </div>
-    ${visible.map(q=>`
-    <div class="tray-q">
-      <div style="display:flex;align-items:flex-start;gap:7px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;color:#dcdce4;font-weight:500;line-height:1.3">${esc(q.quest)}</div>
-          ${q.nextStep?`<div style="font-size:10px;color:#777783;margin-top:2px">→ ${esc(q.nextStep)}</div>`:''}
-        </div>
-        ${q.priority?`<span class="badge" style="font-size:8px;color:${PRI_COLORS[q.priority]||'#6b7280'};border:1px solid ${(PRI_COLORS[q.priority]||'#6b7280')}55">${q.priority}</span>`:''}
-      </div>
-      <div class="assign-row">
-        ${SECTIONS.map(s=>`<div class="assign" data-act="assign" data-qid="${q.id}" data-sec="${s.key}" title="Add to ${s.label}" style="background:${s.color}1a;border:1px solid ${s.color}44;color:${s.color}"><span class="ai">${s.icon}</span><span class="al">${s.label}</span></div>`).join('')}
-      </div>
-    </div>`).join('')}</div>`;
-  const tog = document.getElementById('tray-toggle');
-  if (tog) tog.onclick = () => { trayShowAll = !trayShowAll; renderTray(); };
+async function markQuestDone(questId) {
+  if (!questId) return;
+  try {
+    const res = await fetch(API + '/api/quests/' + questId + '/done', { method: 'POST' });
+    if (!res.ok) console.error('Failed to update Notion');
+  } catch(err) { console.error('Sync error:', err); }
 }
 
-function assignQuest(qid, secKey) {
-  const q = tray.find(x=>x.id===qid); if(!q) return;
-  const slots = hub[secKey];
-  const i = slots.findIndex(s=>!s.task);
-  if (i===-1) { alert(SECTIONS.find(s=>s.key===secKey).label + ' is full (3/3).'); return; }
-  slots[i] = { task:q.quest, next:q.nextStep||'', time:'', done:false, questId:q.id };
-  tray = tray.filter(x=>x.id!==qid);
-  saveHub(); renderHub(); renderTray();
-}
-
-// ---------- Projects ----------
 async function fetchProjects() {
   const btn = document.getElementById('refresh');
   btn.disabled = true; btn.textContent = '⟳ Loading…';
@@ -277,7 +226,6 @@ function renderProjects() {
     </div>`).join('');
 }
 
-// ---------- Events ----------
 document.getElementById('date').textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
 
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
@@ -290,26 +238,23 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 });
 
 document.getElementById('pull').onclick = pullQuests;
-document.getElementById('refresh').onclick = fetchProjects;
-document.getElementById('reset').onclick = () => { if(confirm("Clear all of today's tasks?")){ hub=emptyData(); tray=[]; saveHub(); renderHub(); renderTray(); } };
+document.getElementById('reset').onclick = () => { if(confirm("Clear all of today's tasks?")){ hub=emptyData(); saveHub(); renderHub(); } };
 
-// Delegated input + click for hub
 document.getElementById('sections').addEventListener('input', e=>{
   const f=e.target.dataset.field; if(!f) return;
   hub[e.target.dataset.sec][+e.target.dataset.idx][f] = e.target.value;
   saveHub();
 });
+
 document.getElementById('sections').addEventListener('click', e=>{
   const c=e.target.closest('[data-act="toggle"]'); if(!c) return;
-  const it = hub[c.dataset.sec][+c.dataset.idx]; if(!it.task) return;
-  it.done = !it.done; saveHub(); renderHub();
-});
-document.getElementById('tray').addEventListener('click', e=>{
-  const a=e.target.closest('[data-act="assign"]'); if(!a) return;
-  assignQuest(a.dataset.qid, a.dataset.sec);
+  const sec = c.dataset.sec, idx = +c.dataset.idx;
+  const it = hub[sec][idx]; if(!it.task) return;
+  it.done = !it.done;
+  if (it.done && it.questId) markQuestDone(it.questId);
+  saveHub(); renderHub();
 });
 
-// Init
 loadHub(); renderHub();
 </script>
 </body>
