@@ -1,8 +1,4 @@
-import { Client } from "@notionhq/client";
-
-const notion = new Client({ auth: process.env.NOTION_API_KEY });
-
-const QUESTS_DB_ID = "b9f25082-f57d-4691-8042-bb96ba68bba4";
+const DATA_SOURCE_ID = "a672470d-ecf0-49c5-afac-2b3ceee7c331";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -17,18 +13,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await notion.databases.query({
-      database_id: QUESTS_DB_ID,
-      filter: {
-        or: [
-          { property: "Status", select: { equals: "Open" } },
-          { property: "Status", select: { equals: "In Progress" } }
-        ]
+    const r = await fetch(`https://api.notion.com/v1/data_sources/${DATA_SOURCE_ID}/query`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.NOTION_API_KEY}`,
+        "Notion-Version": "2025-09-03",
+        "Content-Type": "application/json"
       },
-      sorts: [{ property: "Priority", direction: "ascending" }]
+      body: JSON.stringify({
+        filter: {
+          or: [
+            { property: "Status", select: { equals: "Open" } },
+            { property: "Status", select: { equals: "In Progress" } }
+          ]
+        },
+        sorts: [{ property: "Priority", direction: "ascending" }]
+      })
     });
 
-    const quests = response.results.map(page => {
+    const data = await r.json();
+    if (!r.ok) {
+      throw new Error(data.message || `Notion error ${r.status}`);
+    }
+
+    const quests = (data.results || []).map(page => {
       const p = page.properties;
       return {
         id: page.id,
